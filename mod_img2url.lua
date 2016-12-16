@@ -30,10 +30,10 @@ local function on_message(event)
         return
     end
 
-	local img = event.stanza:get_child("image", "http://mangga.me/protocol/image")
-	if not img then
-		return
-	end
+    local img = event.stanza:get_child("image", "http://mangga.me/protocol/image")
+    if not img then
+        return
+    end
 
     -- match content-type
     local ext = ""
@@ -42,10 +42,10 @@ local function on_message(event)
     end
 
     img = base64.decode(img:get_text())
-	if not img then
-		module:log("error", "Invalid base64")
+    if not img then
+        module:log("error", "Invalid base64")
         return err(event.stanza, "bad-request", "Invalid base64 encoded image")
-	end
+    end
 
     -- remove big image tag
     event.stanza:maptags(function(child) 
@@ -57,39 +57,39 @@ local function on_message(event)
 
     local len = img:len()
     if len > file_size_limit then
-		module:log("error", "Uploaded file too large: %d bytes", len)
+        module:log("error", "Uploaded file too large: %d bytes", len)
         return err(event.stanza, "not-acceptable", "File size too large: "..len.." bytes, max ".. file_size_limit/1024 .. " kilobytes allowed")
-	end
+    end
 
     local random = uuid()
 
-	local dirname = join_path(storage_path, random)
-	if not lfs.mkdir(dirname) then
-		module:log("error", "Could not create directory %s for upload", dirname)
+    local dirname = join_path(storage_path, random)
+    if not lfs.mkdir(dirname) then
+        module:log("error", "Could not create directory %s for upload", dirname)
         return err(event.stanza, "internal-server-error", "Unable to create directory")
-	end
+    end
     local filename = uuid() .. ext
-	local full_filename = join_path(dirname, filename)
-	local fh, ferr = io.open(full_filename, "w")
-	if not fh then
-		module:log("error", "Could not open file %s for upload: %s", full_filename, ferr)
+    local full_filename = join_path(dirname, filename)
+    local fh, ferr = io.open(full_filename, "w")
+    if not fh then
+        module:log("error", "Could not open file %s for upload: %s", full_filename, ferr)
         return err(event.stanza, "internal-server-error", ferr)
-	end
-	local ok, err = fh:write(img)
+    end
+    local ok, err = fh:write(img)
     img = nil
-	if not ok then
-		module:log("error", "Could not write to file %s for upload: %s", full_filename, err)
-		os.remove(full_filename)
+    if not ok then
+        module:log("error", "Could not write to file %s for upload: %s", full_filename, err)
+        os.remove(full_filename)
         return err(event.stanza, "internal-server-error", err)
-	end
-	ok, err = fh:close()
-	if not ok then
-		module:log("error", "Could not write to file %s for upload: %s", full_filename, err)
-		os.remove(full_filename)
+    end
+    ok, err = fh:close()
+    if not ok then
+        module:log("error", "Could not write to file %s for upload: %s", full_filename, err)
+        os.remove(full_filename)
         return err(event.stanza, "internal-server-error", err)
-	end
+    end
 
-	module:log("info", "Image saved to %s", full_filename)
+    module:log("info", "Image saved to %s", full_filename)
 
     local url = download_path .. "/" .. random .. "/" .. filename
     event.stanza:body(url):up()
