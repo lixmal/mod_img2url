@@ -30,32 +30,39 @@ local function on_message(event)
         return
     end
 
-    local img = event.stanza:get_child("image", "http://mangga.me/protocol/image")
-    if not img then
+    -- get image or voice
+    local bin = event.stanza:get_child("image", "http://mangga.me/protocol/image")
+    if not bin then
+        bin = event.stanza:get_child("voice", "http://mangga.me/protocol/voice")
+    end
+    if not bin then
         return
     end
 
     -- match content-type
     local ext = ""
-    if img.attr and img.attr.type == "image/jpeg" then
+    if bin.attr and bin.attr.type == "image/jpeg" then
         ext = ".jpg"
+    elseif bin.attr and bin.attr.type == "audio/voice" then
+        ext = ".m4a"
     end
 
-    img = base64.decode(img:get_text())
-    if not img then
+
+    bin = base64.decode(bin:get_text())
+    if not bin then
         module:log("error", "Invalid base64")
         return err(event.stanza, "bad-request", "Invalid base64 encoded image")
     end
 
     -- remove big image tag
     event.stanza:maptags(function(child) 
-        if child.name == "image" or child.name == "body" then
+        if child.name == "image" or child.name == "voice" or child.name == "body" then
             return nil
         end
         return child
     end)
 
-    local len = img:len()
+    local len = bin:len()
     if len > file_size_limit then
         module:log("error", "Uploaded file too large: %d bytes", len)
         return err(event.stanza, "not-acceptable", "File size too large: "..len.." bytes, max ".. file_size_limit/1024 .. " kilobytes allowed")
@@ -75,8 +82,8 @@ local function on_message(event)
         module:log("error", "Could not open file %s for upload: %s", full_filename, ferr)
         return err(event.stanza, "internal-server-error", ferr)
     end
-    local ok, err = fh:write(img)
-    img = nil
+    local ok, err = fh:write(bin)
+    bin = nil
     if not ok then
         module:log("error", "Could not write to file %s for upload: %s", full_filename, err)
         os.remove(full_filename)

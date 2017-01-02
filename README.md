@@ -1,8 +1,8 @@
 # mod_img2url
 
-Converts stanzes with embedded images sent by the [AstraChat](http://astrachat.com/download.aspx) clients to XEP-0363 (HTTP File Upload).
-Images will be written to the http_upload directory and an external link will be send to the recipient instead of the (possibly large) image.
-The module will strip images early, so they don't get archived.
+Converts stanzes with embedded images or audio sent by the [AstraChat](http://astrachat.com/download.aspx) clients to XEP-0363 (HTTP File Upload).
+Files will be written to the http_upload directory and an external link will be send to the recipient instead of the (possibly large) file.
+The module will strip binaries early, so they don't get archived.
 
 
 ## PREREQUISITES
@@ -30,4 +30,3 @@ The module will build the url from (`http_external_url` || basic http url) + (co
 
 ## TODO
 - Match more mime types
-- Add more media (audio)
