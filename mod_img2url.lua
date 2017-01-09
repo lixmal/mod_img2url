@@ -1,10 +1,10 @@
 module:depends("http_upload")
 
 -- imports
-local st = require "util/stanza"
+local st     = require "util.stanza"
 local base64 = require "util.encodings".base64
-local lfs = require "lfs"
-local uuid = require "util.uuid".generate
+local lfs    = require "lfs"
+local uuid   = require "util.uuid".generate
 
 local function join_path(a, b)
     return a .. package.config:sub(1,1) .. b
