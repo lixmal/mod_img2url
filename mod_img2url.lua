@@ -71,18 +71,19 @@ local function on_message(event)
     local random = uuid()
 
     local dirname = join_path(storage_path, random)
-    if not lfs.mkdir(dirname) then
-        module:log("error", "Could not create directory %s for upload", dirname)
-        return err(event.stanza, "internal-server-error", "Unable to create directory")
+    local ok, err = lfs.mkdir(dirname)
+    if not ok then
+        module:log("error", "Could not create directory %s for upload: %s", dirname, err)
+        return err(event.stanza, "internal-server-error", err)
     end
     local filename = uuid() .. ext
     local full_filename = join_path(dirname, filename)
-    local fh, ferr = io.open(full_filename, "w")
+    local fh, err = io.open(full_filename, "w")
     if not fh then
-        module:log("error", "Could not open file %s for upload: %s", full_filename, ferr)
-        return err(event.stanza, "internal-server-error", ferr)
+        module:log("error", "Could not open file %s for upload: %s", full_filename, err)
+        return err(event.stanza, "internal-server-error", err)
     end
-    local ok, err = fh:write(bin)
+    ok, err = fh:write(bin)
     bin = nil
     if not ok then
         module:log("error", "Could not write to file %s for upload: %s", full_filename, err)
